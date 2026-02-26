@@ -1,17 +1,38 @@
+POST /users HTTP/1.1
+Host: localhost:8888
+Content-Type: application/json
 
-// Create New User
-# POST /users HTTP/1.1
-# Host: localhost:8888
-# Content-Type: application/json
+{
+    "email": "vincent@mail.com",
+    "password": "12345"
+}
 
-# {
-#     "email": "vincent@mail.com",
-#     "password": "12345"
-# }
+###
 
-
-// Get all User
 GET /users HTTP/1.1
 Host: localhost:8888
 Content-Type: application/json
+
+###
+
+GET /users/2 HTTP/1.1
+Host: localhost:8888
+Content-Type: application/json
+
+###
+
+PATCH /users/1 HTTP/1.1
+Host: localhost:8888
+Content-Type: application/json
+
+{
+    "password": "kodathebest"
+}
+
+###
+
+DELETE /users/1 HTTP/1.1
+Host: localhost:8888
+Content-Type: application/json
+
 
