@@ -3,7 +3,7 @@ package main
 import "github.com/gin-gonic/gin"
 
 type User struct {
-	ID       int    `json:id`
+	ID      int    `json:id`
 	Email    string `json:email`
 	Password string `json:password`
 }
@@ -20,10 +20,12 @@ func main() {
 
 		if ctx.BindJSON(&input) != nil {
 			ctx.JSON(400, gin.H{"error" : "Invalid request"})
+			return
 		}
 
-		if input.Email == "" || input.Password == "" {
+		if input.Email == "" || input.Password == "" || input.Email == " " || input.Password == " " {
 			ctx.JSON(400, gin.H{"error" : "Email & Password required"})
+			return
 		}
 
 		input.ID = nextId
@@ -37,6 +39,15 @@ func main() {
 		})
 	})
 
+	// Read all user
+	r.GET("/users", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
+			"message": "Success get users",
+			"data": users,
+		})
+	})
+
+	// Read by Id
 	
 
 	r.Run("localhost:8888")
