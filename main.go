@@ -21,6 +21,66 @@ type Response struct {
 var users []User
 var nextID = 1
 
+func createUserLogic(input User) (Response, int){
+	hasAt := false // Untuk validasi email
+
+	if input.Email == "" || input.Password == "" {
+		return Response{
+			Status: false,
+			Message: "Email and Password required!",
+			Data: nil,
+		},400
+	}
+
+	// Validasi Email
+
+	for i := 0; i < len(input.Email); i++ {
+		if string(input.Email[i]) == "@" {
+			hasAt = true
+		}
+	}
+
+	if !hasAt {
+		return Response{
+			Status: false,
+			Message: "Invalid email format!",
+			Data: nil,
+		},400
+	}
+
+	// Validasi Password minimal 5 karakter
+
+	if len(input.Password) < 5 {
+		return Response{
+			Status: false,
+			Message: "Password must be at least 5 characters!",
+			Data: nil,
+		},400
+	}
+
+	// Cek Duplicate Email
+
+	for i := 0; i < len(users); i++ {
+		if users[i].Email == input.Email {
+			return Response{
+				Status: false,
+				Message: "Email already registered",
+				Data: nil,
+			},400
+		}
+	}
+
+	input.ID = nextID
+	nextID++
+	users = append(users, input)
+
+	return Response{
+		Status: true,
+		Message: "User registered successfully",
+		Data: input,
+	}, 201
+}
+
 func main() {
 	r := gin.Default()
 
@@ -37,6 +97,40 @@ func main() {
 			return
 		}
 
+		response, code := createUserLogic(input)
+		ctx.JSON(code, response)
+	})
+
+	// Register Users
+	r.POST("/register", func(ctx *gin.Context) {
+		var input User
+
+		if ctx.BindJSON(&input) != nil {
+			ctx.JSON(400, Response{
+				Status: false,
+				Message: "Invalid request body",
+				Data: nil,
+			})
+			return
+		}
+
+		response, code := createUserLogic(input)
+		ctx.JSON(code, response)
+	})
+
+	//Login Users
+	r.POST("/login", func(ctx *gin.Context) {
+		var input User
+
+		if ctx.BindJSON(&input) != nil {
+			ctx.JSON(400, Response{
+				Status: false,
+				Message: "Invalid request body",
+				Data: nil,
+			})
+			return
+		}
+
 		if input.Email == "" || input.Password == "" {
 			ctx.JSON(400, Response{
 				Status: false,
@@ -48,24 +142,28 @@ func main() {
 
 		for i := 0; i < len(users); i++ {
 			if users[i].Email == input.Email {
-				ctx.JSON(400, Response{
+				if users[i].Password == input.Password {
+					ctx.JSON(200, Response{
+						Status: true,
+						Message: "Login successfuly",
+						Data: users[i],
+					})
+					return
+				}
+
+				ctx.JSON(401, Response{
 					Status: false,
-					Message: "Email already Registered",
+					Message: "Wrong Password",
 					Data: nil,
 				})
 				return
 			}
 		}
 
-		input.ID = nextID
-		nextID++
-
-		users = append(users, input)
-
-		ctx.JSON(201, Response{
-			Status: true,
-			Message: "User Created Succsessfully",
-			Data: input,
+		ctx.JSON(404, Response{
+			Status: false,
+			Message: "Email not Registered",
+			Data: nil,
 		})
 	})
 
