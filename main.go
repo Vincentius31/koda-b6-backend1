@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
+	"github.com/matthewhartstonge/argon2"
 )
 
 type User struct {
@@ -20,6 +20,19 @@ type Response struct {
 
 var users []User
 var nextID = 1
+
+var argon = argon2.DefaultConfig()
+
+func hashPassword(password string) string {
+	hash, _ := argon.HashEncoded([]byte(password))
+	return string(hash)
+}
+
+func verifyPassword(hash string, password string) bool {
+	match, _ := argon2.VerifyEncoded([]byte(password), []byte(hash))
+	return match
+}
+
 
 func createUserLogic(input User) (Response, int){
 	hasAt := false // Untuk validasi email
@@ -69,6 +82,8 @@ func createUserLogic(input User) (Response, int){
 			},400
 		}
 	}
+
+	input.Password = hashPassword(input.Password)
 
 	input.ID = nextID
 	nextID++
@@ -142,7 +157,7 @@ func main() {
 
 		for i := 0; i < len(users); i++ {
 			if users[i].Email == input.Email {
-				if users[i].Password == input.Password {
+				if verifyPassword(users[i].Password, input.Password) {
 					ctx.JSON(200, Response{
 						Status: true,
 						Message: "Login successfuly",
@@ -229,7 +244,7 @@ func main() {
 				}
 
 				if input.Password != "" {
-					users[i].Password = input.Password
+					users[i].Password = hashPassword(input.Password)
 				}
 
 				ctx.JSON(200, Response{
