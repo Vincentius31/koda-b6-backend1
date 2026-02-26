@@ -13,8 +13,8 @@ type User struct {
 }
 
 type Response struct {
-	Message string `json:"message"`
 	Status bool `json:"status"`
+	Message string `json:"message"`
 	Data interface{} `json:"data"`
 }
 
@@ -30,8 +30,8 @@ func main() {
 
 		if ctx.BindJSON(&input) != nil {
 			ctx.JSON(400, Response{
-				Message: "Invalid request body!",
 				Status: false,
+				Message: "Invalid request body!",
 				Data: nil,
 			})
 			return
@@ -39,8 +39,8 @@ func main() {
 
 		if input.Email == "" || input.Password == "" {
 			ctx.JSON(400, Response{
-				Message: "Email and Password Required!",
 				Status: false,
+				Message: "Email and Password Required!",
 				Data: nil,
 			})
 			return
@@ -49,8 +49,8 @@ func main() {
 		for i := 0; i < len(users); i++ {
 			if users[i].Email == input.Email {
 				ctx.JSON(400, Response{
-					Message: "Email already Registered",
 					Status: false,
+					Message: "Email already Registered",
 					Data: nil,
 				})
 				return
@@ -63,8 +63,8 @@ func main() {
 		users = append(users, input)
 
 		ctx.JSON(201, Response{
-			Message: "User Created Succsessfully",
 			Status: true,
+			Message: "User Created Succsessfully",
 			Data: input,
 		})
 	})
@@ -72,8 +72,8 @@ func main() {
 	// Get all users
 	r.GET("/users", func(ctx *gin.Context) {
 		ctx.JSON(200, Response{
-			Message: "Success get all users",
 			Status: true,
+			Message: "Success get all users",
 			Data: users,
 		})
 	})
@@ -85,8 +85,8 @@ func main() {
 		for i := 0; i < len(users); i++ {
 			if idParam == fmt.Sprint(users[i].ID) {
 				ctx.JSON(200, Response{
-					Message: "User Found!",
 					Status: true,
+					Message: "User Found!",
 					Data: users[i],
 				})
 				return
@@ -94,8 +94,8 @@ func main() {
 		}
 
 		ctx.JSON(404, Response{
-			Message: "User not found!",
 			Status: false,
+			Message: "User not found!",
 			Data: nil,
 		})
 	})
@@ -107,8 +107,8 @@ func main() {
 
 		if ctx.BindJSON(&input) != nil {
 			ctx.JSON(400, Response{
-				Message: "Invalid request body",
 				Status: false,
+				Message: "Invalid request body",
 				Data: nil,
 			})
 			return
@@ -120,8 +120,8 @@ func main() {
 					for j := 0; j < len(users); j++ {
 						if users[j].Email == input.Email && users[j].ID != users[i].ID {
 							ctx.JSON(400, Response{
-								Message: "Email already Registered",
 								Status: false,
+								Message: "Email already Registered",
 								Data: nil,
 							})
 							return
@@ -135,8 +135,8 @@ func main() {
 				}
 
 				ctx.JSON(200, Response{
-					Message: "User updated succsessfully!",
 					Status: true,
+					Message: "User updated succsessfully!",
 					Data: users[i],
 				})
 				return
@@ -144,8 +144,8 @@ func main() {
 		}
 
 		ctx.JSON(404, Response{
-			Message: "User not found",
 			Status: false,
+			Message: "User not found",
 			Data: nil,
 		})
 	})
@@ -160,6 +160,7 @@ func main() {
 				users = append(users[:i], users[i+1:]...)
 
 				ctx.JSON(200, Response{
+					Status: true,
 					Message: "User Deleted succsessfully!",
 				})
 				return
@@ -167,8 +168,8 @@ func main() {
 		}
 
 		ctx.JSON(404, Response{
-			Message: "User not found",
 			Status: false,
+			Message: "User not found",
 			Data: nil,
 		})
 	})
