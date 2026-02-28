@@ -7,15 +7,19 @@ import (
 )
 
 type User struct {
-	ID       int    `json:"id"`
+	Id       int    `json:"id"`
+	Fullname string `json:"fullname"`
 	Email    string `json:"email"`
+	Phone    string `json:"phone"`
 	Password string `json:"password"`
+	Address  string `json:"address"`
+	Picture  string `json:"picture"`
 }
 
 type Response struct {
-	Status bool `json:"status"`
-	Message string `json:"message"`
-	Data interface{} `json:"data"`
+	Status  bool        `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
 
 var users []User
@@ -33,20 +37,18 @@ func verifyPassword(hash string, password string) bool {
 	return match
 }
 
+func createUserLogic(input User) (Response, int) {
+	hasAt := false
 
-func createUserLogic(input User) (Response, int){
-	hasAt := false // Untuk validasi email
-
-	if input.Email == "" || input.Password == "" {
+	// Basic Validation
+	if input.Email == "" || input.Password == "" || input.Fullname == "" {
 		return Response{
-			Status: false,
-			Message: "Email and Password required!",
-			Data: nil,
-		},400
+			Status:  false,
+			Message: "Fullname, Email, and Password are required!",
+		}, 400
 	}
 
-	// Validasi Email
-
+	// Email Validation
 	for i := 0; i < len(input.Email); i++ {
 		if string(input.Email[i]) == "@" {
 			hasAt = true
@@ -54,103 +56,56 @@ func createUserLogic(input User) (Response, int){
 	}
 
 	if !hasAt {
-		return Response{
-			Status: false,
-			Message: "Invalid email format!",
-			Data: nil,
-		},400
+		return Response{Status: false, Message: "Invalid email format!"}, 400
 	}
-
-	// Validasi Password minimal 5 karakter
 
 	if len(input.Password) < 5 {
-		return Response{
-			Status: false,
-			Message: "Password must be at least 5 characters!",
-			Data: nil,
-		},400
+		return Response{Status: false, Message: "Password must be at least 5 characters!"}, 400
 	}
 
-	// Cek Duplicate Email
-
+	// Check Duplicate Email
 	for i := 0; i < len(users); i++ {
 		if users[i].Email == input.Email {
-			return Response{
-				Status: false,
-				Message: "Email already registered",
-				Data: nil,
-			},400
+			return Response{Status: false, Message: "Email already registered"}, 400
 		}
 	}
 
 	input.Password = hashPassword(input.Password)
-
-	input.ID = nextID
+	input.Id = nextID
 	nextID++
 	users = append(users, input)
 
 	return Response{
-		Status: true,
+		Status:  true,
 		Message: "User registered successfully",
-		Data: input,
+		Data:    input,
 	}, 201
 }
 
 func main() {
 	r := gin.Default()
 
-	// Create Users
-	r.POST("/users", func(ctx *gin.Context) {
-		var input User
-
-		if ctx.BindJSON(&input) != nil {
-			ctx.JSON(400, Response{
-				Status: false,
-				Message: "Invalid request body!",
-				Data: nil,
-			})
-			return
-		}
-
-		response, code := createUserLogic(input)
-		ctx.JSON(code, response)
-	})
-
-	// Register Users
+	// Register
 	r.POST("/register", func(ctx *gin.Context) {
 		var input User
-
-		if ctx.BindJSON(&input) != nil {
+		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false,
+				Status: false, 
 				Message: "Invalid request body",
-				Data: nil,
 			})
 			return
 		}
-
 		response, code := createUserLogic(input)
 		ctx.JSON(code, response)
 	})
 
-	//Login Users
+	// Login
 	r.POST("/login", func(ctx *gin.Context) {
 		var input User
-
-		if ctx.BindJSON(&input) != nil {
+		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false,
+				Status: false, 
 				Message: "Invalid request body",
-				Data: nil,
-			})
-			return
-		}
-
-		if input.Email == "" || input.Password == "" {
-			ctx.JSON(400, Response{
-				Status: false,
-				Message: "Email and Password Required!",
-				Data: nil,
 			})
 			return
 		}
@@ -159,135 +114,123 @@ func main() {
 			if users[i].Email == input.Email {
 				if verifyPassword(users[i].Password, input.Password) {
 					ctx.JSON(200, Response{
-						Status: true,
-						Message: "Login successfuly",
+						Status: true, 
+						Message: "Login successful", 
 						Data: users[i],
 					})
 					return
 				}
-
 				ctx.JSON(401, Response{
-					Status: false,
+					Status: false, 
 					Message: "Wrong Password",
-					Data: nil,
 				})
 				return
 			}
 		}
-
 		ctx.JSON(404, Response{
-			Status: false,
+			Status: false, 
 			Message: "Email not Registered",
-			Data: nil,
 		})
 	})
 
-	// Get all users
+	// Get All Users
 	r.GET("/users", func(ctx *gin.Context) {
 		ctx.JSON(200, Response{
-			Status: true,
-			Message: "Success get all users",
+			Status: true, 
+			Message: "Success get all users", 
 			Data: users,
 		})
 	})
 
-	// Get Users by ID
+	// Get User By ID
 	r.GET("/users/:id", func(ctx *gin.Context) {
 		idParam := ctx.Param("id")
-
 		for i := 0; i < len(users); i++ {
-			if idParam == fmt.Sprint(users[i].ID) {
+			if idParam == fmt.Sprint(users[i].Id) {
 				ctx.JSON(200, Response{
-					Status: true,
-					Message: "User Found!",
+					Status: true, 
+					Message: "User Found!", 
 					Data: users[i],
 				})
 				return
 			}
 		}
-
-		ctx.JSON(404, Response{
-			Status: false,
-			Message: "User not found!",
-			Data: nil,
-		})
+		ctx.JSON(404, Response{Status: false, Message: "User not found!"})
 	})
 
-	// Update Users
+	// Update User 
 	r.PATCH("/users/:id", func(ctx *gin.Context) {
 		idParam := ctx.Param("id")
 		var input User
 
-		if ctx.BindJSON(&input) != nil {
+		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false,
+				Status: false, 
 				Message: "Invalid request body",
-				Data: nil,
 			})
 			return
 		}
 
 		for i := 0; i < len(users); i++ {
-			if idParam == fmt.Sprint(users[i].ID) {
-				if input.Email != "" {
+			if idParam == fmt.Sprint(users[i].Id) {
+				if input.Fullname != "" {
+					users[i].Fullname = input.Fullname
+				}
+				
+				if input.Email != "" && input.Email != users[i].Email {
 					for j := 0; j < len(users); j++ {
-						if users[j].Email == input.Email && users[j].ID != users[i].ID {
+						if users[j].Email == input.Email {
 							ctx.JSON(400, Response{
-								Status: false,
-								Message: "Email already Registered",
-								Data: nil,
-							})
+								Status: false, 
+								Message: "Email already Registered"})
 							return
 						}
 					}
 					users[i].Email = input.Email
 				}
 
+				if input.Phone != "" {
+					users[i].Phone = input.Phone
+				}
+
 				if input.Password != "" {
 					users[i].Password = hashPassword(input.Password)
 				}
 
+				if input.Address != "" {
+					users[i].Address = input.Address
+				}
+
+				if input.Picture != "" {
+					users[i].Picture = input.Picture
+				}
+
 				ctx.JSON(200, Response{
-					Status: true,
-					Message: "User updated succsessfully!",
+					Status: true, 
+					Message: "User updated successfully!", 
 					Data: users[i],
 				})
 				return
 			}
 		}
-
-		ctx.JSON(404, Response{
-			Status: false,
-			Message: "User not found",
-			Data: nil,
-		})
+		ctx.JSON(404, Response{Status: false, Message: "User not found"})
 	})
 
-	// Delete Users
+	// Delete User
 	r.DELETE("/users/:id", func(ctx *gin.Context) {
 		idParam := ctx.Param("id")
-
 		for i := 0; i < len(users); i++ {
-			if idParam == fmt.Sprint(users[i].ID) {
-
+			if idParam == fmt.Sprint(users[i].Id) {
 				users = append(users[:i], users[i+1:]...)
-
 				ctx.JSON(200, Response{
-					Status: true,
-					Message: "User Deleted succsessfully!",
+					Status: true, 
+					Message: "User Deleted successfully!",
 				})
 				return
 			}
 		}
-
-		ctx.JSON(404, Response{
-			Status: false,
-			Message: "User not found",
-			Data: nil,
-		})
+		ctx.JSON(404, Response{Status: false, Message: "User not found"})
 	})
 
 	r.Run("localhost:8888")
 }
-
-
