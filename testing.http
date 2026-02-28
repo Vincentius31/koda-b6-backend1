@@ -1,4 +1,16 @@
-POST /users HTTP/1.1
+POST /register HTTP/1.1
+Host: localhost:8888
+Content-Type: application/json
+
+{
+    "fullname": "Vincentius",
+    "email": "vincent@mail.com",
+    "password": "12345"
+}
+
+###
+
+POST /login HTTP/1.1
 Host: localhost:8888
 Content-Type: application/json
 
@@ -15,7 +27,7 @@ Content-Type: application/json
 
 ###
 
-GET /users/2 HTTP/1.1
+GET /users/1 HTTP/1.1
 Host: localhost:8888
 Content-Type: application/json
 
@@ -34,27 +46,5 @@ Content-Type: application/json
 DELETE /users/1 HTTP/1.1
 Host: localhost:8888
 Content-Type: application/json
-
-###
-
-POST /register HTTP/1.1
-Host: localhost:8888
-Content-Type: application/json
-
-{
-    "email": "vincent@mail.com",
-    "password": "12345"
-}
-
-###
-
-POST /login HTTP/1.1
-Host: localhost:8888
-Content-Type: application/json
-
-{
-    "email": "vincent@mail.com",
-    "password": "12345"
-}
 
 
