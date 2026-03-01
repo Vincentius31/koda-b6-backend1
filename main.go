@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"github.com/gin-gonic/gin"
 	"github.com/matthewhartstonge/argon2"
 )
 
 type User struct {
-	Id       int    `json:"id"`
-	Fullname string `json:"fullname"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Password string `json:"password"`
-	Address  string `json:"address"`
-	Picture  string `json:"picture"`
+	Id       int    `json:"id_user"`         // Sesuai DB: id_user
+	RolesId  int    `json:"roles_id"`        // Sesuai DB: roles_id
+	Fullname string `json:"fullname"`        // Sesuai DB: fullname
+	Email    string `json:"email"`           // Sesuai DB: email
+	Phone    string `json:"phone"`           // Sesuai DB: phone
+	Password string `json:"password"`        // Sesuai DB: password
+	Address  string `json:"address"`         // Sesuai DB: address
+	Picture  string `json:"profile_picture"` // Sesuai DB: profile_picture
 }
 
 type Response struct {
@@ -73,6 +75,11 @@ func createUserLogic(input User) (Response, int) {
 	input.Password = hashPassword(input.Password)
 	input.Id = nextID
 	nextID++
+
+	if input.RolesId == 0 {
+		input.RolesId = 2
+	}
+
 	users = append(users, input)
 
 	return Response{
@@ -83,14 +90,20 @@ func createUserLogic(input User) (Response, int) {
 }
 
 func main() {
+	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
+		os.Mkdir("uploads", 0755)
+	}
+
 	r := gin.Default()
+
+	r.Static("/uploads", "./uploads")
 
 	// Register
 	r.POST("/register", func(ctx *gin.Context) {
 		var input User
 		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false, 
+				Status:  false,
 				Message: "Invalid request body",
 			})
 			return
@@ -104,7 +117,7 @@ func main() {
 		var input User
 		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false, 
+				Status:  false,
 				Message: "Invalid request body",
 			})
 			return
@@ -114,21 +127,21 @@ func main() {
 			if users[i].Email == input.Email {
 				if verifyPassword(users[i].Password, input.Password) {
 					ctx.JSON(200, Response{
-						Status: true, 
-						Message: "Login successful", 
-						Data: users[i],
+						Status:  true,
+						Message: "Login successful",
+						Data:    users[i],
 					})
 					return
 				}
 				ctx.JSON(401, Response{
-					Status: false, 
+					Status:  false,
 					Message: "Wrong Password",
 				})
 				return
 			}
 		}
 		ctx.JSON(404, Response{
-			Status: false, 
+			Status:  false,
 			Message: "Email not Registered",
 		})
 	})
@@ -136,9 +149,9 @@ func main() {
 	// Get All Users
 	r.GET("/users", func(ctx *gin.Context) {
 		ctx.JSON(200, Response{
-			Status: true, 
-			Message: "Success get all users", 
-			Data: users,
+			Status:  true,
+			Message: "Success get all users",
+			Data:    users,
 		})
 	})
 
@@ -148,9 +161,9 @@ func main() {
 		for i := 0; i < len(users); i++ {
 			if idParam == fmt.Sprint(users[i].Id) {
 				ctx.JSON(200, Response{
-					Status: true, 
-					Message: "User Found!", 
-					Data: users[i],
+					Status:  true,
+					Message: "User Found!",
+					Data:    users[i],
 				})
 				return
 			}
@@ -158,14 +171,14 @@ func main() {
 		ctx.JSON(404, Response{Status: false, Message: "User not found!"})
 	})
 
-	// Update User 
+	// Update User
 	r.PATCH("/users/:id", func(ctx *gin.Context) {
 		idParam := ctx.Param("id")
 		var input User
 
 		if err := ctx.BindJSON(&input); err != nil {
 			ctx.JSON(400, Response{
-				Status: false, 
+				Status:  false,
 				Message: "Invalid request body",
 			})
 			return
@@ -176,12 +189,12 @@ func main() {
 				if input.Fullname != "" {
 					users[i].Fullname = input.Fullname
 				}
-				
+
 				if input.Email != "" && input.Email != users[i].Email {
 					for j := 0; j < len(users); j++ {
 						if users[j].Email == input.Email {
 							ctx.JSON(400, Response{
-								Status: false, 
+								Status:  false,
 								Message: "Email already Registered"})
 							return
 						}
@@ -205,10 +218,14 @@ func main() {
 					users[i].Picture = input.Picture
 				}
 
+				if input.RolesId != 0 {
+					users[i].RolesId = input.RolesId
+				}
+
 				ctx.JSON(200, Response{
-					Status: true, 
-					Message: "User updated successfully!", 
-					Data: users[i],
+					Status:  true,
+					Message: "User updated successfully!",
+					Data:    users[i],
 				})
 				return
 			}
@@ -223,7 +240,7 @@ func main() {
 			if idParam == fmt.Sprint(users[i].Id) {
 				users = append(users[:i], users[i+1:]...)
 				ctx.JSON(200, Response{
-					Status: true, 
+					Status:  true,
 					Message: "User Deleted successfully!",
 				})
 				return
