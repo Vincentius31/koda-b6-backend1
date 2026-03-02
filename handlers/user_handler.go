@@ -43,14 +43,14 @@ func LoginHandler(ctx *gin.Context) {
 			}
 			ctx.JSON(401, models.Response{
 				Status:  false,
-				Message: "Wrong Password",
+				Message: "Wrong Email or Password",
 			})
 			return
 		}
 	}
 	ctx.JSON(404, models.Response{
 		Status:  false,
-		Message: "Email not Registered",
+		Message: "Wrong Email or Password",
 	})
 }
 
