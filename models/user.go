@@ -5,14 +5,25 @@ import (
 )
 
 type User struct {
-	Id       int    `json:"id_user"`         // Sesuai DB: id_user
-	RolesId  int    `json:"roles_id"`        // Sesuai DB: roles_id
-	Fullname string `json:"fullname"`        // Sesuai DB: fullname
-	Email    string `json:"email"`           // Sesuai DB: email
-	Phone    string `json:"phone"`           // Sesuai DB: phone
-	Password string `json:"password"`        // Sesuai DB: password
-	Address  string `json:"address"`         // Sesuai DB: address
-	Picture  string `json:"profile_picture"` // Sesuai DB: profile_picture
+	Id       int    `json:"id_user"`
+	RolesId  int    `json:"roles_id"`
+	Fullname string `json:"fullname"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	Password string `json:"password"`
+	Address  string `json:"address"`
+	Picture  string `json:"profile_picture"`
+}
+
+type UserRegisterDTO struct {
+	Fullname string `json:"fullname"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type UserLoginDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type Response struct {
@@ -72,7 +83,6 @@ func CreateUserLogic(input User) (Response, int) {
 	input.Id = NextID
 	NextID++
 
-	// Default Role jika tidak diisi (misal: 2 untuk 'User')
 	if input.RolesId == 0 {
 		input.RolesId = 2
 	}
