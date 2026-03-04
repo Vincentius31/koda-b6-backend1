@@ -6,8 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Register
-func RegisterHandler(ctx *gin.Context) {
+// CreateHandler godoc
+// @Summary      Create a new user
+// @Description  Register a new user into the system
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      models.UserRegisterDTO  true  "Register Data"
+// @Success      201   {object}  models.Response
+// @Failure      400   {object}  models.Response
+// @Router       /users [post]
+func CreateHandler(ctx *gin.Context) {
 	var input models.User
 	if err := ctx.BindJSON(&input); err != nil {
 		ctx.JSON(400, models.Response{
@@ -20,7 +29,17 @@ func RegisterHandler(ctx *gin.Context) {
 	ctx.JSON(code, response)
 }
 
-// Login
+// LoginHandler godoc
+// @Summary      User Login
+// @Description  Authenticate user with email and password
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body      models.UserLoginDTO  true  "Login Credentials"
+// @Success      200          {object}  models.Response
+// @Failure      401          {object}  models.Response
+// @Failure      404          {object}  models.Response
+// @Router       /login [post]
 func LoginHandler(ctx *gin.Context) {
 	var input models.User
 	if err := ctx.BindJSON(&input); err != nil {
@@ -54,7 +73,13 @@ func LoginHandler(ctx *gin.Context) {
 	})
 }
 
-// Get All Users
+// GetAllUsersHandler godoc
+// @Summary      Get all users
+// @Description  Retrieve a list of all registered users
+// @Tags         users
+// @Produce      json
+// @Success      200  {object}  models.Response
+// @Router       /users [get]
 func GetAllUsersHandler(ctx *gin.Context) {
 	ctx.JSON(200, models.Response{
 		Status:  true,
@@ -63,7 +88,15 @@ func GetAllUsersHandler(ctx *gin.Context) {
 	})
 }
 
-// Get User By ID
+// GetUserByIdHandler godoc
+// @Summary      Get user by ID
+// @Description  Retrieve single user details by their ID
+// @Tags         users
+// @Produce      json
+// @Param        id   path      string  true  "User ID"
+// @Success      200  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Router       /users/{id} [get]
 func GetUserByIdHandler(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	for i := 0; i < len(models.Users); i++ {
@@ -79,7 +112,18 @@ func GetUserByIdHandler(ctx *gin.Context) {
 	ctx.JSON(404, models.Response{Status: false, Message: "User not found!"})
 }
 
-// Update User
+// UpdateUserHandler godoc
+// @Summary      Update user
+// @Description  Update existing user information by ID
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string       true  "User ID"
+// @Param        user  body      models.User  true  "Updated User Data"
+// @Success      200   {object}  models.Response
+// @Failure      400   {object}  models.Response
+// @Failure      404   {object}  models.Response
+// @Router       /users/{id} [put]
 func UpdateUserHandler(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	var input models.User
@@ -141,7 +185,15 @@ func UpdateUserHandler(ctx *gin.Context) {
 	ctx.JSON(404, models.Response{Status: false, Message: "User not found"})
 }
 
-// Delete User
+// DeleteUserHandler godoc
+// @Summary      Delete user
+// @Description  Remove a user from the system by ID
+// @Tags         users
+// @Produce      json
+// @Param        id   path      string  true  "User ID"
+// @Success      200  {object}  models.Response
+// @Failure      404  {object}  models.Response
+// @Router       /users/{id} [delete]
 func DeleteUserHandler(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	for i := 0; i < len(models.Users); i++ {
