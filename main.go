@@ -1,18 +1,19 @@
 package main
 
 import (
-	"os"
 	"koda-b6-backend1/routes"
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
-		os.Mkdir("uploads", 0755)
-	}
 
+//@title 		koda-b6-backend1
+//@version		1.0.0
+//@description	This is basic backend CRUD for users and products
+//@host			localhost:8888
+//@BasePath		/
+
+func main() {
 	r := gin.Default()
-	r.Static("/uploads", "./uploads")
 	
 	routes.SetupRoutes(r)
 
